@@ -10,7 +10,7 @@
     body {
       margin: 0;
       font-family: 'Roboto', sans-serif;
-      background: linear-gradient(to right, #2e0202, #ffb347);
+      background: linear-gradient(135deg, #000000, #ff69b4);
       color: #fff;
       display: flex;
       flex-direction: column;
@@ -21,23 +21,24 @@
       margin-bottom: 10px;
       font-family: 'Russo One', sans-serif;
       text-transform: uppercase;
-      font-size: 26px;
-      color: #ffd700;
+      font-size: 28px;
+      color: #ff69b4;
       text-align: center;
+      text-shadow: 1px 1px 3px #000;
     }
     h1::before {
       content: '🦁 ';
     }
     form {
-      background: #1b1b1b;
+      background: #1a1a1a;
       padding: 20px;
       border-radius: 20px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 0 25px rgba(255, 105, 180, 0.5);
       max-width: 400px;
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
     input, select, button {
       padding: 12px;
@@ -46,33 +47,32 @@
       border: none;
     }
     input, select {
-      background: #2e2e2e;
+      background: #2b2b2b;
       color: #fff;
     }
     button {
-      background-color: #f28c00;
+      background-color: #ff69b4;
       color: white;
       font-weight: bold;
-      border: none;
       cursor: pointer;
       transition: background 0.3s, transform 0.2s;
     }
     button:hover {
-      background-color: #c76a00;
-      transform: scale(1.02);
+      background-color: #e055a1;
+      transform: scale(1.03);
     }
     .result {
       margin-top: 20px;
-      background: #1b1b1b;
+      background: #1a1a1a;
       padding: 20px;
       border-radius: 20px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 0 25px rgba(255, 105, 180, 0.4);
       text-align: center;
       animation: fadeIn 0.5s ease-in-out;
     }
     .result strong {
       font-size: 22px;
-      color: #ffd700;
+      color: #ff69b4;
       display: block;
       margin-bottom: 12px;
     }
