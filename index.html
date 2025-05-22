@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Калькулятор калорий</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const tg = window.Telegram.WebApp;
+      tg.expand();
+
+      const form = document.getElementById("calcForm");
+      const resultBox = document.getElementById("result");
+      const caloriesText = document.getElementById("calories");
+      const proteinsText = document.getElementById("proteins");
+      const fatsText = document.getElementById("fats");
+      const carbsText = document.getElementById("carbs");
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const sex = document.getElementById("sex").value;
+        const age = parseInt(document.getElementById("age").value);
+        const height = parseInt(document.getElementById("height").value);
+        const weight = parseInt(document.getElementById("weight").value);
+        const goal = document.getElementById("goal").value;
+
+        let bmr;
+        if (sex === "male") {
+          bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+        } else {
+          bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+        }
+
+        let calories = bmr;
+        if (goal === "lose") calories -= 300;
+        else if (goal === "gain") calories += 300;
+
+        const proteins = (calories * 0.3) / 4;
+        const fats = (calories * 0.25) / 9;
+        const carbs = (calories * 0.45) / 4;
+
+        caloriesText.textContent = `🔥 Калории: ${Math.round(calories)} ккал`;
+        proteinsText.textContent = `🥩 Белки: ${Math.round(proteins)} г`;
+        fatsText.textContent = `🥑 Жиры: ${Math.round(fats)} г`;
+        carbsText.textContent = `🍞 Углеводы: ${Math.round(carbs)} г`;
+
+        resultBox.classList.remove("hidden");
+        tg.HapticFeedback.notificationOccurred("success");
+      });
+    });
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <div class="max-w-md mx-auto mt-6 p-4 bg-white rounded-2xl shadow-xl">
+    <h1 class="text-2xl font-bold text-center mb-4">Калькулятор калорий</h1>
+    <form id="calcForm" class="space-y-3">
+      <div>
+        <label class="block mb-1">Пол:</label>
+        <select id="sex" class="w-full p-2 border rounded">
+          <option value="male">Мужчина</option>
+          <option value="female">Женщина</option>
+        </select>
+      </div>
+      <div>
+        <label class="block mb-1">Возраст:</label>
+        <input type="number" id="age" class="w-full p-2 border rounded" required />
+      </div>
+      <div>
+        <label class="block mb-1">Рост (см):</label>
+        <input type="number" id="height" class="w-full p-2 border rounded" required />
+      </div>
+      <div>
+        <label class="block mb-1">Вес (кг):</label>
+        <input type="number" id="weight" class="w-full p-2 border rounded" required />
+      </div>
+      <div>
+        <label class="block mb-1">Цель:</label>
+        <select id="goal" class="w-full p-2 border rounded">
+          <option value="lose">Похудеть</option>
+          <option value="maintain">Поддерживать</option>
+          <option value="gain">Набрать</option>
+        </select>
+      </div>
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700">Рассчитать</button>
+    </form>
+
+    <div id="result" class="mt-6 hidden">
+      <h2 class="text-xl font-bold mb-2">Результаты:</h2>
+      <p id="calories"></p>
+      <p id="proteins"></p>
+      <p id="fats"></p>
+      <p id="carbs"></p>
+    </div>
+  </div>
+</body>
+</html>
