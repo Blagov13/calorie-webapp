@@ -1,99 +1,175 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Калькулятор калорий</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BLAGOV team — Калькулятор Формы</title>
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to right, #2e0202, #ffb347);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 10px;
+      font-family: 'Russo One', sans-serif;
+      text-transform: uppercase;
+      font-size: 26px;
+      color: #ffd700;
+      text-align: center;
+    }
+    h1::before {
+      content: '🦁 ';
+    }
+    form {
+      background: #1b1b1b;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      max-width: 400px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    input, select, button {
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: none;
+    }
+    input, select {
+      background: #2e2e2e;
+      color: #fff;
+    }
+    button {
+      background-color: #f28c00;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+    button:hover {
+      background-color: #c76a00;
+      transform: scale(1.02);
+    }
+    .result {
+      margin-top: 20px;
+      background: #1b1b1b;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      text-align: center;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    .result strong {
+      font-size: 22px;
+      color: #ffd700;
+      display: block;
+      margin-bottom: 12px;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <h1>BLAGOV team — калькулятор формы</h1>
+  <form id="calorieForm">
+    <input type="number" id="age" placeholder="Возраст (лет)" required>
+    <input type="number" id="height" placeholder="Рост (см)" required>
+    <input type="number" id="weight" placeholder="Вес (кг)" required>
+
+    <select id="gender">
+      <option value="male">Мужской</option>
+      <option value="female">Женский</option>
+    </select>
+
+    <select id="activity">
+      <option value="1.2">Мало активности 🪑</option>
+      <option value="1.375">Умеренная активность 🚶</option>
+      <option value="1.55">Средняя активность 🏃</option>
+      <option value="1.725">Высокая активность 🏋️</option>
+      <option value="1.9">Экстремальная активность 🚀</option>
+    </select>
+
+    <select id="goal">
+      <option value="lose">Похудеть 🥦</option>
+      <option value="maintain">Поддерживать ⚖️</option>
+      <option value="gain">Набрать 🍗</option>
+    </select>
+
+    <button type="submit">Рассчитать 🔥</button>
+  </form>
+
+  <div class="result" id="result" style="display:none"></div>
+
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const tg = window.Telegram.WebApp;
-      tg.expand();
+    const form = document.getElementById('calorieForm');
+    const resultBlock = document.getElementById('result');
 
-      const form = document.getElementById("calcForm");
-      const resultBox = document.getElementById("result");
-      const caloriesText = document.getElementById("calories");
-      const proteinsText = document.getElementById("proteins");
-      const fatsText = document.getElementById("fats");
-      const carbsText = document.getElementById("carbs");
-
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-
-        const sex = document.getElementById("sex").value;
-        const age = parseInt(document.getElementById("age").value);
-        const height = parseInt(document.getElementById("height").value);
-        const weight = parseInt(document.getElementById("weight").value);
-        const goal = document.getElementById("goal").value;
-
-        let bmr;
-        if (sex === "male") {
-          bmr = 10 * weight + 6.25 * height - 5 * age + 5;
-        } else {
-          bmr = 10 * weight + 6.25 * height - 5 * age - 161;
-        }
-
-        let calories = bmr;
-        if (goal === "lose") calories -= 300;
-        else if (goal === "gain") calories += 300;
-
-        const proteins = (calories * 0.3) / 4;
-        const fats = (calories * 0.25) / 9;
-        const carbs = (calories * 0.45) / 4;
-
-        caloriesText.textContent = `🔥 Калории: ${Math.round(calories)} ккал`;
-        proteinsText.textContent = `🥩 Белки: ${Math.round(proteins)} г`;
-        fatsText.textContent = `🥑 Жиры: ${Math.round(fats)} г`;
-        carbsText.textContent = `🍞 Углеводы: ${Math.round(carbs)} г`;
-
-        resultBox.classList.remove("hidden");
-        tg.HapticFeedback.notificationOccurred("success");
+    window.onload = () => {
+      ['age','height','weight','gender','activity','goal'].forEach(id => {
+        const val = localStorage.getItem(id);
+        if (val) document.getElementById(id).value = val;
       });
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+
+      const age = parseInt(document.getElementById('age').value);
+      const height = parseInt(document.getElementById('height').value);
+      const weight = parseInt(document.getElementById('weight').value);
+      const gender = document.getElementById('gender').value;
+      const activity = parseFloat(document.getElementById('activity').value);
+      const goal = document.getElementById('goal').value;
+
+      localStorage.setItem('age', age);
+      localStorage.setItem('height', height);
+      localStorage.setItem('weight', weight);
+      localStorage.setItem('gender', gender);
+      localStorage.setItem('activity', activity);
+      localStorage.setItem('goal', goal);
+
+      let bmr;
+      if (gender === 'male') {
+        bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+      } else {
+        bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+      }
+
+      const tdee = bmr * activity;
+
+      let calories;
+      if (goal === 'lose') calories = tdee - 500;
+      else if (goal === 'gain') calories = tdee + 500;
+      else calories = tdee;
+
+      const proteins = (calories * 0.3 / 4).toFixed(0);
+      const fats = (calories * 0.25 / 9).toFixed(0);
+      const carbs = (calories * 0.45 / 4).toFixed(0);
+
+      resultBlock.innerHTML = `
+        <strong>Твоя суточная норма:</strong>
+        🔥 Калории: <b>${Math.round(calories)}</b> ккал<br>
+        🥩 Белки: <b>${proteins}</b> г<br>
+        🥑 Жиры: <b>${fats}</b> г<br>
+        🍚 Углеводы: <b>${carbs}</b> г<br>
+        <br>
+        <button onclick="navigator.clipboard.writeText('Ккал: ${Math.round(calories)}, Б: ${proteins}, Ж: ${fats}, У: ${carbs}')">📋 Скопировать результат</button>
+      `;
+      resultBlock.style.display = 'block';
     });
   </script>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 text-gray-800">
-  <div class="max-w-md mx-auto mt-6 p-4 bg-white rounded-2xl shadow-xl">
-    <h1 class="text-2xl font-bold text-center mb-4">Калькулятор калорий</h1>
-    <form id="calcForm" class="space-y-3">
-      <div>
-        <label class="block mb-1">Пол:</label>
-        <select id="sex" class="w-full p-2 border rounded">
-          <option value="male">Мужчина</option>
-          <option value="female">Женщина</option>
-        </select>
-      </div>
-      <div>
-        <label class="block mb-1">Возраст:</label>
-        <input type="number" id="age" class="w-full p-2 border rounded" required />
-      </div>
-      <div>
-        <label class="block mb-1">Рост (см):</label>
-        <input type="number" id="height" class="w-full p-2 border rounded" required />
-      </div>
-      <div>
-        <label class="block mb-1">Вес (кг):</label>
-        <input type="number" id="weight" class="w-full p-2 border rounded" required />
-      </div>
-      <div>
-        <label class="block mb-1">Цель:</label>
-        <select id="goal" class="w-full p-2 border rounded">
-          <option value="lose">Похудеть</option>
-          <option value="maintain">Поддерживать</option>
-          <option value="gain">Набрать</option>
-        </select>
-      </div>
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700">Рассчитать</button>
-    </form>
-
-    <div id="result" class="mt-6 hidden">
-      <h2 class="text-xl font-bold mb-2">Результаты:</h2>
-      <p id="calories"></p>
-      <p id="proteins"></p>
-      <p id="fats"></p>
-      <p id="carbs"></p>
-    </div>
-  </div>
 </body>
 </html>
