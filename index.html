@@ -113,12 +113,6 @@
 
   <div class="result" id="result" style="display:none"></div>
 
-  <div id="historyBlock" class="result" style="display:none; margin-top: 20px;">
-    <strong>История расчётов:</strong>
-    <ul id="historyList" style="list-style: none; padding-left: 0;"></ul>
-    <button onclick="clearHistory()">🗑 Очистить историю</button>
-  </div>
-
   <script>
     const form = document.getElementById('calorieForm');
     const resultBlock = document.getElementById('result');
@@ -128,7 +122,6 @@
         const val = localStorage.getItem(id);
         if (val) document.getElementById(id).value = val;
       });
-      updateHistory();
     }
 
     form.addEventListener('submit', e => {
@@ -166,54 +159,37 @@
       const fats = (calories * 0.25 / 9).toFixed(0);
       const carbs = (calories * 0.45 / 4).toFixed(0);
 
+      const bmi = (weight / ((height / 100) ** 2)).toFixed(1);
+      let bmiStatus = '';
+      let bmiColor = '';
+
+      if (bmi < 18.5) {
+        bmiStatus = 'Недовес';
+        bmiColor = '#00BFFF';
+      } else if (bmi < 25) {
+        bmiStatus = 'Норма';
+        bmiColor = '#00FA9A';
+      } else if (bmi < 30) {
+        bmiStatus = 'Избыточный вес';
+        bmiColor = '#FFD700';
+      } else {
+        bmiStatus = 'Ожирение';
+        bmiColor = '#FF4500';
+      }
+
       resultBlock.innerHTML = `
         <strong>Твоя суточная норма:</strong>
         🔥 Калории: <b>${Math.round(calories)}</b> ккал<br>
         🥩 Белки: <b>${proteins}</b> г<br>
         🥑 Жиры: <b>${fats}</b> г<br>
-        🍚 Углеводы: <b>${carbs}</b> г<br>
-        <br>
-        <button onclick="navigator.clipboard.writeText('Ккал: ${Math.round(calories)}, Б: ${proteins}, Ж: ${fats}, У: ${carbs}')">📋 Скопировать результат</button>
+        🍚 Углеводы: <b>${carbs}</b> г<br><br>
+
+        <strong>📏 ИМТ: <span style="color:${bmiColor}">${bmi} (${bmiStatus})</span></strong><br><br>
+
+        <button onclick="navigator.clipboard.writeText('Ккал: ${Math.round(calories)}, Б: ${proteins}, Ж: ${fats}, У: ${carbs}, ИМТ: ${bmi} (${bmiStatus})')">📋 Скопировать результат</button>
       `;
       resultBlock.style.display = 'block';
-
-      // Сохраняем в историю
-      const history = JSON.parse(localStorage.getItem('calcHistory')) || [];
-      history.push({
-        date: new Date().toLocaleDateString(),
-        calories: Math.round(calories),
-        proteins,
-        fats,
-        carbs
-      });
-      localStorage.setItem('calcHistory', JSON.stringify(history));
-      updateHistory();
     });
-
-    function updateHistory() {
-      const history = JSON.parse(localStorage.getItem('calcHistory')) || [];
-      const historyList = document.getElementById('historyList');
-      historyList.innerHTML = '';
-
-      history.slice().reverse().forEach(entry => {
-        const item = document.createElement('li');
-        item.innerHTML = `
-          📅 ${entry.date}: 
-          🔥 ${entry.calories} ккал, 
-          🥩 ${entry.proteins} Б, 
-          🥑 ${entry.fats} Ж, 
-          🍚 ${entry.carbs} У
-        `;
-        historyList.appendChild(item);
-      });
-
-      document.getElementById('historyBlock').style.display = history.length > 0 ? 'block' : 'none';
-    }
-
-    function clearHistory() {
-      localStorage.removeItem('calcHistory');
-      updateHistory();
-    }
   </script>
 </body>
 </html>
