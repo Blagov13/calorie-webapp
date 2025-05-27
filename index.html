@@ -80,6 +80,17 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    li {
+      margin-bottom: 12px;
+      padding: 10px;
+      background: #2b2b2b;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
@@ -113,6 +124,11 @@
 
   <div class="result" id="result" style="display:none"></div>
 
+  <div class="result" id="history" style="display:none; margin-top: 30px;">
+    <strong>История расчётов:</strong>
+    <ul id="historyList"></ul>
+  </div>
+
   <script>
     const form = document.getElementById('calorieForm');
     const resultBlock = document.getElementById('result');
@@ -122,6 +138,7 @@
         const val = localStorage.getItem(id);
         if (val) document.getElementById(id).value = val;
       });
+      renderHistory();
     }
 
     form.addEventListener('submit', e => {
@@ -129,7 +146,7 @@
 
       const age = parseInt(document.getElementById('age').value);
       const height = parseInt(document.getElementById('height').value);
-      const weight = parseInt(document.getElementById('weight').value);
+      const weight = parseFloat(document.getElementById('weight').value);
       const gender = document.getElementById('gender').value;
       const activity = parseFloat(document.getElementById('activity').value);
       const goal = document.getElementById('goal').value;
@@ -159,37 +176,67 @@
       const fats = (calories * 0.25 / 9).toFixed(0);
       const carbs = (calories * 0.45 / 4).toFixed(0);
 
-      const bmi = (weight / ((height / 100) ** 2)).toFixed(1);
+      const heightM = height / 100;
+      const bmi = (weight / (heightM * heightM)).toFixed(1);
       let bmiStatus = '';
-      let bmiColor = '';
-
-      if (bmi < 18.5) {
-        bmiStatus = 'Недовес';
-        bmiColor = '#00BFFF';
-      } else if (bmi < 25) {
-        bmiStatus = 'Норма';
-        bmiColor = '#00FA9A';
-      } else if (bmi < 30) {
-        bmiStatus = 'Избыточный вес';
-        bmiColor = '#FFD700';
-      } else {
-        bmiStatus = 'Ожирение';
-        bmiColor = '#FF4500';
-      }
+      if (bmi < 18.5) bmiStatus = 'Недостаток веса';
+      else if (bmi < 25) bmiStatus = 'Норма';
+      else if (bmi < 30) bmiStatus = 'Избыточный вес';
+      else bmiStatus = 'Ожирение';
 
       resultBlock.innerHTML = `
         <strong>Твоя суточная норма:</strong>
         🔥 Калории: <b>${Math.round(calories)}</b> ккал<br>
         🥩 Белки: <b>${proteins}</b> г<br>
         🥑 Жиры: <b>${fats}</b> г<br>
-        🍚 Углеводы: <b>${carbs}</b> г<br><br>
-
-        <strong>📏 ИМТ: <span style="color:${bmiColor}">${bmi} (${bmiStatus})</span></strong><br><br>
-
+        🍚 Углеводы: <b>${carbs}</b> г<br>
+        📏 ИМТ: <b>${bmi}</b> (${bmiStatus})<br>
+        <br>
         <button onclick="navigator.clipboard.writeText('Ккал: ${Math.round(calories)}, Б: ${proteins}, Ж: ${fats}, У: ${carbs}, ИМТ: ${bmi} (${bmiStatus})')">📋 Скопировать результат</button>
       `;
       resultBlock.style.display = 'block';
+
+      saveToHistory({
+        date: new Date().toLocaleString(),
+        calories: Math.round(calories),
+        proteins,
+        fats,
+        carbs,
+        bmi,
+        bmiStatus
+      });
+      renderHistory();
     });
+
+    function saveToHistory(entry) {
+      const history = JSON.parse(localStorage.getItem('history') || '[]');
+      history.unshift(entry);
+      localStorage.setItem('history', JSON.stringify(history.slice(0, 7))); // max 7 записей
+    }
+
+    function renderHistory() {
+      const historyData = JSON.parse(localStorage.getItem('history') || '[]');
+      const list = document.getElementById('historyList');
+      const historyBlock = document.getElementById('history');
+      list.innerHTML = '';
+
+      if (historyData.length === 0) {
+        historyBlock.style.display = 'none';
+        return;
+      }
+
+      historyData.forEach(item => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <b>${item.date}</b><br>
+          Ккал: ${item.calories}, Б: ${item.proteins}г, Ж: ${item.fats}г, У: ${item.carbs}г<br>
+          ИМТ: ${item.bmi} (${item.bmiStatus})
+        `;
+        list.appendChild(li);
+      });
+
+      historyBlock.style.display = 'block';
+    }
   </script>
 </body>
 </html>
