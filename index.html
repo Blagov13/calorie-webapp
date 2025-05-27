@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BLAGOV team — Калькулятор Формы</title>
+  <title>BLAGOV team — Калькулятор Калорий</title>
   <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
@@ -17,17 +17,23 @@
       align-items: center;
       padding: 20px;
     }
-    h1 {
-      margin-bottom: 10px;
+    .title {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .title h1 {
       font-family: 'Russo One', sans-serif;
       text-transform: uppercase;
-      font-size: 28px;
+      font-size: 32px;
+      margin: 0;
       color: #ff69b4;
-      text-align: center;
       text-shadow: 1px 1px 3px #000;
     }
-    h1::before {
-      content: '🦁 ';
+    .title h2 {
+      font-size: 18px;
+      font-weight: 400;
+      margin: 5px 0 0;
+      color: #ffc6e0;
     }
     form {
       background: #1a1a1a;
@@ -67,44 +73,56 @@
       padding: 20px;
       border-radius: 20px;
       box-shadow: 0 0 25px rgba(255, 105, 180, 0.4);
-      text-align: center;
       animation: fadeIn 0.5s ease-in-out;
+      max-width: 500px;
+      width: 100%;
     }
-    .result strong {
-      font-size: 22px;
-      color: #ff69b4;
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .result-item {
+      background: #2b2b2b;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+    .result-item span {
       display: block;
-      margin-bottom: 12px;
+      font-size: 14px;
+      color: #aaa;
+    }
+    .result-item strong {
+      font-size: 20px;
+      color: #ff69b4;
+    }
+    .bmi-status {
+      margin-top: 10px;
+      text-align: center;
+      font-weight: bold;
+      color: #ffc6e0;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    li {
-      margin-bottom: 12px;
-      padding: 10px;
-      background: #2b2b2b;
-      border-radius: 10px;
-    }
   </style>
 </head>
 <body>
-  <h1>BLAGOV team — калькулятор формы</h1>
+  <div class="title">
+    <h1>BLAGOV team</h1>
+    <h2>Калькулятор калорий</h2>
+  </div>
   <form id="calorieForm">
     <input type="number" id="age" placeholder="Возраст (лет)" required>
     <input type="number" id="height" placeholder="Рост (см)" required>
     <input type="number" id="weight" placeholder="Вес (кг)" required>
-
     <select id="gender">
       <option value="male">Мужской</option>
       <option value="female">Женский</option>
     </select>
-
     <select id="activity">
       <option value="1.2">Мало активности 🪑</option>
       <option value="1.375">Умеренная активность 🚶</option>
@@ -112,22 +130,15 @@
       <option value="1.725">Высокая активность 🏋️</option>
       <option value="1.9">Экстремальная активность 🚀</option>
     </select>
-
     <select id="goal">
       <option value="lose">Похудеть 🥦</option>
       <option value="maintain">Поддерживать ⚖️</option>
       <option value="gain">Набрать 🍗</option>
     </select>
-
     <button type="submit">Рассчитать 🔥</button>
   </form>
 
   <div class="result" id="result" style="display:none"></div>
-
-  <div class="result" id="history" style="display:none; margin-top: 30px;">
-    <strong>История расчётов:</strong>
-    <ul id="historyList"></ul>
-  </div>
 
   <script>
     const form = document.getElementById('calorieForm');
@@ -138,7 +149,6 @@
         const val = localStorage.getItem(id);
         if (val) document.getElementById(id).value = val;
       });
-      renderHistory();
     }
 
     form.addEventListener('submit', e => {
@@ -158,85 +168,30 @@
       localStorage.setItem('activity', activity);
       localStorage.setItem('goal', goal);
 
-      let bmr;
-      if (gender === 'male') {
-        bmr = 10 * weight + 6.25 * height - 5 * age + 5;
-      } else {
-        bmr = 10 * weight + 6.25 * height - 5 * age - 161;
-      }
+      let bmr = gender === 'male'
+        ? 10 * weight + 6.25 * height - 5 * age + 5
+        : 10 * weight + 6.25 * height - 5 * age - 161;
 
       const tdee = bmr * activity;
-
-      let calories;
-      if (goal === 'lose') calories = tdee - 500;
-      else if (goal === 'gain') calories = tdee + 500;
-      else calories = tdee;
-
+      let calories = goal === 'lose' ? tdee - 500 : goal === 'gain' ? tdee + 500 : tdee;
       const proteins = (calories * 0.3 / 4).toFixed(0);
       const fats = (calories * 0.25 / 9).toFixed(0);
       const carbs = (calories * 0.45 / 4).toFixed(0);
-
       const heightM = height / 100;
       const bmi = (weight / (heightM * heightM)).toFixed(1);
-      let bmiStatus = '';
-      if (bmi < 18.5) bmiStatus = 'Недостаток веса';
-      else if (bmi < 25) bmiStatus = 'Норма';
-      else if (bmi < 30) bmiStatus = 'Избыточный вес';
-      else bmiStatus = 'Ожирение';
+      let bmiStatus = bmi < 18.5 ? 'Недостаток веса' : bmi < 25 ? 'Норма' : bmi < 30 ? 'Избыточный вес' : 'Ожирение';
 
       resultBlock.innerHTML = `
-        <strong>Твоя суточная норма:</strong>
-        🔥 Калории: <b>${Math.round(calories)}</b> ккал<br>
-        🥩 Белки: <b>${proteins}</b> г<br>
-        🥑 Жиры: <b>${fats}</b> г<br>
-        🍚 Углеводы: <b>${carbs}</b> г<br>
-        📏 ИМТ: <b>${bmi}</b> (${bmiStatus})<br>
-        <br>
-        <button onclick="navigator.clipboard.writeText('Ккал: ${Math.round(calories)}, Б: ${proteins}, Ж: ${fats}, У: ${carbs}, ИМТ: ${bmi} (${bmiStatus})')">📋 Скопировать результат</button>
+        <div class="result-grid">
+          <div class="result-item"><strong>${Math.round(calories)}</strong><span>ккал в день</span></div>
+          <div class="result-item"><strong>${proteins} г</strong><span>белки</span></div>
+          <div class="result-item"><strong>${fats} г</strong><span>жиры</span></div>
+          <div class="result-item"><strong>${carbs} г</strong><span>углеводы</span></div>
+        </div>
+        <div class="bmi-status">ИМТ: ${bmi} — ${bmiStatus}</div>
       `;
       resultBlock.style.display = 'block';
-
-      saveToHistory({
-        date: new Date().toLocaleString(),
-        calories: Math.round(calories),
-        proteins,
-        fats,
-        carbs,
-        bmi,
-        bmiStatus
-      });
-      renderHistory();
     });
-
-    function saveToHistory(entry) {
-      const history = JSON.parse(localStorage.getItem('history') || '[]');
-      history.unshift(entry);
-      localStorage.setItem('history', JSON.stringify(history.slice(0, 7))); // max 7 записей
-    }
-
-    function renderHistory() {
-      const historyData = JSON.parse(localStorage.getItem('history') || '[]');
-      const list = document.getElementById('historyList');
-      const historyBlock = document.getElementById('history');
-      list.innerHTML = '';
-
-      if (historyData.length === 0) {
-        historyBlock.style.display = 'none';
-        return;
-      }
-
-      historyData.forEach(item => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-          <b>${item.date}</b><br>
-          Ккал: ${item.calories}, Б: ${item.proteins}г, Ж: ${item.fats}г, У: ${item.carbs}г<br>
-          ИМТ: ${item.bmi} (${item.bmiStatus})
-        `;
-        list.appendChild(li);
-      });
-
-      historyBlock.style.display = 'block';
-    }
   </script>
 </body>
 </html>
